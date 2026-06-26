@@ -55,8 +55,11 @@ Spec & plan: `docs/specs/`, `docs/plans/`.
 - Place: +jumlah sel. Line: 1→10, 2→30, 3→60, 4→100 (eskalasi). Multiplier combo x1→x5.
 - `nextCombo` reset ke 1 saat tidak ada clear; combo disimpan di store (mulai 0 saat newGame).
 
-### Reanimated 4
-- SDK 54 pakai Reanimated 4 → babel plugin **`react-native-worklets/plugin`** (bukan `react-native-reanimated/plugin`), wajib listed LAST di `babel.config.js`.
+### Reanimated 4 — babel plugin (PENTING, pernah bikin crash)
+- SDK 54 pakai Reanimated 4 yang butuh `react-native-worklets`.
+- **`babel-preset-expo` SDK 54 OTOMATIS menambahkan `react-native-worklets/plugin`** saat `react-native-worklets` terinstall. JANGAN tambahkan plugin itu manual di `babel.config.js`.
+- Menambahkannya manual = plugin jalan 2×  → worklet di-transform ganda → runtime crash **"Exception in HostFunction: <unknown>"** (lolos build, gagal saat run). `babel.config.js` cukup berisi `presets: ['babel-preset-expo']` saja.
+- Setelah ubah babel config, restart Metro dengan cache clear: `npx expo start -c`.
 - Import `SharedValue` langsung dari `react-native-reanimated`, bukan via namespace `Animated`.
 
 ---
