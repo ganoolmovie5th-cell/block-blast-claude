@@ -8,6 +8,8 @@ import { Grid, PreviewMap } from '../components/Grid';
 import { BlockTray } from '../components/BlockTray';
 import { ScoreBoard } from '../components/ScoreBoard';
 import { GameOverModal } from '../components/GameOverModal';
+import { ClearFlash } from '../components/ClearFlash';
+import { ComboPopup } from '../components/ComboPopup';
 import {
   CELL_MARGIN,
   BOARD_PADDING,
@@ -37,9 +39,21 @@ export function GameScreen() {
   const isGameOver = useGameStore((s) => s.isGameOver);
   const dropBlock = useGameStore((s) => s.dropBlock);
   const newGame = useGameStore((s) => s.newGame);
+  const lastCleared = useGameStore((s) => s.lastCleared);
 
   const gridOrigin = React.useRef({ x: 0, y: 0 });
   const [previews, setPreviews] = React.useState<PreviewMap>({});
+  // Replay the clear flash each time a non-empty clear happens.
+  const [flash, setFlash] = React.useState<{ cells: [number, number][]; id: number }>({
+    cells: [],
+    id: 0,
+  });
+
+  React.useEffect(() => {
+    if (lastCleared.length > 0) {
+      setFlash((f) => ({ cells: lastCleared, id: f.id + 1 }));
+    }
+  }, [lastCleared]);
 
   // Map an absolute finger position to a board (row, col) for the given shape.
   const resolveCell = React.useCallback(
@@ -107,14 +121,18 @@ export function GameScreen() {
       <ScoreBoard score={score} highScore={highScore} combo={combo} />
 
       <View style={styles.boardWrap}>
-        <Grid
-          grid={grid}
-          cellSize={CELL_SIZE}
-          previews={previews}
-          onMeasure={(x, y) => {
-            gridOrigin.current = { x, y };
-          }}
-        />
+        <View>
+          <Grid
+            grid={grid}
+            cellSize={CELL_SIZE}
+            previews={previews}
+            onMeasure={(x, y) => {
+              gridOrigin.current = { x, y };
+            }}
+          />
+          <ClearFlash key={flash.id} cells={flash.cells} cellSize={CELL_SIZE} />
+        </View>
+        <ComboPopup key={`combo-${combo}`} combo={combo} />
       </View>
 
       <BlockTray
