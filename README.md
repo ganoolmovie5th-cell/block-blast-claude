@@ -1,0 +1,67 @@
+# Block Blast
+
+Game puzzle Block Blast klasik untuk mobile. Drag potongan blok ke grid 8x8; isi baris atau kolom secara penuh untuk menghancurkannya dan mengumpulkan poin. Game berakhir saat tidak ada blok tersisa yang muat di papan.
+
+Dibangun dengan React Native + Expo SDK 54 (kompatibel dengan Expo Go).
+
+## Fitur
+
+- Grid 8x8 dengan 3 blok per giliran dan refill otomatis
+- Drag-and-drop mulus (gesture-handler + reanimated, jalan di UI thread)
+- Preview penempatan: hijau jika muat, merah jika tidak
+- Clear baris/kolom dengan animasi flash
+- Sistem combo/streak dengan multiplier (hingga x5) + popup animasi
+- High score lokal yang tersimpan antar sesi (AsyncStorage)
+- Deteksi game over + tombol main lagi
+
+## Tech Stack
+
+- React Native 0.81 + Expo SDK 54 (managed, Expo Go)
+- TypeScript (strict mode)
+- Zustand + persist middleware + AsyncStorage
+- react-native-gesture-handler, react-native-reanimated
+- Jest + jest-expo (logika game di-test penuh)
+
+## Struktur
+
+```
+src/
+├── core/           # Logika murni (no React, fully tested)
+│   ├── types.ts        # Grid, Cell, BlockShape, GameState
+│   ├── blocks.ts       # Katalog blok + tray generator
+│   ├── gameLogic.ts    # place, clearLines, isGameOver
+│   └── scoring.ts      # poin + combo
+├── store/          # gameStore.ts (Zustand + persist)
+├── components/     # Cell, Grid, BlockTray, DraggableBlock,
+│                   # ScoreBoard, GameOverModal, ClearFlash, ComboPopup
+└── screens/        # GameScreen.tsx (orkestrasi + mapping drag→grid)
+```
+
+Logika game dipisah dari UI: semua aturan di `src/core/` murni TypeScript tanpa React, sehingga mudah di-test.
+
+## Menjalankan
+
+```bash
+npm install
+npx expo start --go    # scan QR dengan Expo Go (SDK 54)
+```
+
+## Testing
+
+```bash
+npm test               # jalankan unit test (33 test)
+npm run typecheck      # tsc --noEmit (0 error)
+npx expo export --platform android   # verifikasi bundle
+```
+
+## Catatan
+
+- Akurasi mapping koordinat drag→grid sebaiknya diuji di device nyata; nilai `DRAG_LIFT` dan layout di `src/components/boardLayout.ts` dapat di-tune bila perlu.
+- Hanya `highScore` yang di-persist; state permainan berjalan bersifat transient.
+
+## Roadmap (di luar MVP)
+
+- Sound effect & haptic feedback
+- Dark/light mode
+- Power-ups & obstacle blocks
+- Leaderboard online
