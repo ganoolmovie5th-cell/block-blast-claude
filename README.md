@@ -4,6 +4,8 @@ Game puzzle Block Blast klasik untuk mobile. Drag potongan blok ke grid 8x8; isi
 
 Dibangun dengan React Native + Expo SDK 54 (kompatibel dengan Expo Go).
 
+**Repo:** https://github.com/ganoolmovie5th-cell/block-blast-claude (branch `main`)
+
 ## Fitur
 
 - Grid 8x8 dengan 3 blok per giliran dan refill otomatis
