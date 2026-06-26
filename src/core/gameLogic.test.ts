@@ -70,3 +70,58 @@ describe('placeBlock', () => {
     expect(next[0][1].filled).toBe(false);
   });
 });
+
+import { clearLines } from './gameLogic';
+
+/** Fill an entire row in-place for test setup. */
+function fillRow(grid: ReturnType<typeof createEmptyGrid>, r: number) {
+  for (let c = 0; c < GRID_SIZE; c += 1) grid[r][c] = { filled: true, color: '#000' };
+}
+
+/** Fill an entire column in-place for test setup. */
+function fillCol(grid: ReturnType<typeof createEmptyGrid>, c: number) {
+  for (let r = 0; r < GRID_SIZE; r += 1) grid[r][c] = { filled: true, color: '#000' };
+}
+
+describe('clearLines', () => {
+  it('clears a single full row', () => {
+    const grid = createEmptyGrid();
+    fillRow(grid, 3);
+    const result = clearLines(grid);
+    expect(result.cleared).toBe(1);
+    for (let c = 0; c < GRID_SIZE; c += 1) {
+      expect(result.grid[3][c].filled).toBe(false);
+    }
+    expect(result.cells).toHaveLength(GRID_SIZE);
+  });
+
+  it('clears a single full column', () => {
+    const grid = createEmptyGrid();
+    fillCol(grid, 5);
+    const result = clearLines(grid);
+    expect(result.cleared).toBe(1);
+    for (let r = 0; r < GRID_SIZE; r += 1) {
+      expect(result.grid[r][5].filled).toBe(false);
+    }
+  });
+
+  it('clears a row and column simultaneously and counts both', () => {
+    const grid = createEmptyGrid();
+    fillRow(grid, 0);
+    fillCol(grid, 0);
+    const result = clearLines(grid);
+    expect(result.cleared).toBe(2);
+    // intersection cleared, plus whole row and column
+    for (let c = 0; c < GRID_SIZE; c += 1) expect(result.grid[0][c].filled).toBe(false);
+    for (let r = 0; r < GRID_SIZE; r += 1) expect(result.grid[r][0].filled).toBe(false);
+  });
+
+  it('returns cleared 0 and an unchanged grid when nothing is full', () => {
+    const grid = createEmptyGrid();
+    grid[2][2] = { filled: true, color: '#000' };
+    const result = clearLines(grid);
+    expect(result.cleared).toBe(0);
+    expect(result.cells).toHaveLength(0);
+    expect(result.grid[2][2].filled).toBe(true);
+  });
+});

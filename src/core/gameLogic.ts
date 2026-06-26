@@ -59,3 +59,57 @@ export function placeBlock(
   }
   return next;
 }
+
+/**
+ * Detect and clear all full rows and columns. Full lines are collected first,
+ * then emptied together so a row and column clearing in the same move do not
+ * interfere with each other's detection.
+ */
+export function clearLines(grid: Grid): {
+  grid: Grid;
+  cleared: number;
+  cells: [number, number][];
+} {
+  const fullRows: number[] = [];
+  const fullCols: number[] = [];
+
+  for (let r = 0; r < GRID_SIZE; r += 1) {
+    if (grid[r].every((cell) => cell.filled)) fullRows.push(r);
+  }
+  for (let c = 0; c < GRID_SIZE; c += 1) {
+    let full = true;
+    for (let r = 0; r < GRID_SIZE; r += 1) {
+      if (!grid[r][c].filled) {
+        full = false;
+        break;
+      }
+    }
+    if (full) fullCols.push(c);
+  }
+
+  if (fullRows.length === 0 && fullCols.length === 0) {
+    return { grid, cleared: 0, cells: [] };
+  }
+
+  const next = cloneGrid(grid);
+  const clearedSet = new Set<string>();
+  const cells: [number, number][] = [];
+
+  const clear = (r: number, c: number) => {
+    const key = `${r},${c}`;
+    if (!clearedSet.has(key)) {
+      clearedSet.add(key);
+      cells.push([r, c]);
+    }
+    next[r][c] = { filled: false, color: null };
+  };
+
+  for (const r of fullRows) {
+    for (let c = 0; c < GRID_SIZE; c += 1) clear(r, c);
+  }
+  for (const c of fullCols) {
+    for (let r = 0; r < GRID_SIZE; r += 1) clear(r, c);
+  }
+
+  return { grid: next, cleared: fullRows.length + fullCols.length, cells };
+}
