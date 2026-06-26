@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Cell as CellModel } from '../core/types';
+import { CELL_MARGIN } from './boardLayout';
 
 type Props = {
   cell: CellModel;
@@ -25,7 +26,7 @@ function CellComponent({ cell, size, preview }: Props) {
 const styles = StyleSheet.create({
   cell: {
     borderRadius: 6,
-    margin: 1.5,
+    margin: CELL_MARGIN,
   },
 });
 
