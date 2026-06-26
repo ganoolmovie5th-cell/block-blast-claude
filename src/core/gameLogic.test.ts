@@ -125,3 +125,32 @@ describe('clearLines', () => {
     expect(result.grid[2][2].filled).toBe(true);
   });
 });
+
+import { isGameOver } from './gameLogic';
+
+describe('isGameOver', () => {
+  it('returns false on an empty grid with a non-empty tray', () => {
+    const grid = createEmptyGrid();
+    expect(isGameOver(grid, [single])).toBe(false);
+  });
+
+  it('returns true when no tray block fits anywhere', () => {
+    // Fill the whole grid so nothing can be placed.
+    const grid = createEmptyGrid();
+    for (let r = 0; r < GRID_SIZE; r += 1) fillRow(grid, r);
+    expect(isGameOver(grid, [single, lShape])).toBe(true);
+  });
+
+  it('returns false when at least one non-null tray block fits', () => {
+    const grid = createEmptyGrid();
+    for (let r = 0; r < GRID_SIZE; r += 1) fillRow(grid, r);
+    // Open up exactly one cell so the 1x1 single fits there.
+    grid[4][4] = { filled: false, color: null };
+    expect(isGameOver(grid, [null, single, null])).toBe(false);
+  });
+
+  it('returns true when the tray is all null', () => {
+    const grid = createEmptyGrid();
+    expect(isGameOver(grid, [null, null, null])).toBe(true);
+  });
+});

@@ -113,3 +113,19 @@ export function clearLines(grid: Grid): {
 
   return { grid: next, cleared: fullRows.length + fullCols.length, cells };
 }
+
+/**
+ * Is the game over? True when no non-null block in the tray can be placed at
+ * any position on the grid.
+ */
+export function isGameOver(grid: Grid, tray: (BlockShape | null)[]): boolean {
+  for (const shape of tray) {
+    if (!shape) continue;
+    for (let r = 0; r < GRID_SIZE; r += 1) {
+      for (let c = 0; c < GRID_SIZE; c += 1) {
+        if (canPlaceBlock(grid, shape, r, c)) return false;
+      }
+    }
+  }
+  return true;
+}
