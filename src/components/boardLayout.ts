@@ -15,5 +15,3 @@ export const FIRST_CELL_OFFSET = BOARD_PADDING + CELL_MARGIN;
 /** How far above the finger the dragged block floats (for visibility). */
 export const DRAG_LIFT = 60;
 
-/** Scale applied to a tray block while it is being dragged. */
-export const DRAG_SCALE_FACTOR = 1; // tray cells already render at board size

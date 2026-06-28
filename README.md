@@ -67,3 +67,10 @@ npx expo export --platform android   # verifikasi bundle
 - Dark/light mode
 - Power-ups & obstacle blocks
 - Leaderboard online
+
+## Pembersihan Kode / Ponytail Audit (Juni 2026)
+
+Sederhanakan tanpa mengubah perilaku. Verifikasi: `npm run typecheck` lolos, `npm test` 33/33 pass.
+- `src/store/gameStore.ts`: `multiplier = cleared>0 ? newCombo : 1` redundan (`nextCombo` sudah reset ke 1) → pakai `newCombo` langsung; inline wrapper `freshTray` → `generateRandomTray`.
+- Hapus re-export mubazir `export { GRID_SIZE }` di `gameStore.ts` & `components/Grid.tsx` (semua konsumen impor dari `core/types`).
+- Hapus `DRAG_SCALE_FACTOR` (=1, 0 pemakaian) di `components/boardLayout.ts`.

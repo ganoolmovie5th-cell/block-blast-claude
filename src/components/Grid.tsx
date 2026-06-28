@@ -1,6 +1,6 @@
 import React from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
-import { Grid as GridModel, GRID_SIZE } from '../core/types';
+import { Grid as GridModel } from '../core/types';
 import { Cell } from './Cell';
 import { BOARD_PADDING } from './boardLayout';
 
@@ -51,5 +51,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export { GRID_SIZE };
 export const Grid = React.memo(GridComponent);

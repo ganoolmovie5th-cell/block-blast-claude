@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GameState, GRID_SIZE } from '../core/types';
+import { GameState } from '../core/types';
 import {
   createEmptyGrid,
   canPlaceBlock,
@@ -26,15 +26,11 @@ type GameStore = GameState & {
   dropBlock: (trayIndex: number, row: number, col: number) => void;
 };
 
-function freshTray() {
-  return generateRandomTray();
-}
-
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       grid: createEmptyGrid(),
-      tray: freshTray(),
+      tray: generateRandomTray(),
       score: 0,
       highScore: 0,
       combo: 0,
@@ -44,7 +40,7 @@ export const useGameStore = create<GameStore>()(
       newGame: () =>
         set({
           grid: createEmptyGrid(),
-          tray: freshTray(),
+          tray: generateRandomTray(),
           score: 0,
           combo: 0,
           isGameOver: false,
@@ -66,15 +62,14 @@ export const useGameStore = create<GameStore>()(
         // Scoring + combo.
         const newCombo = nextCombo(state.combo, cleared);
         const base = placementScore(cellCount(shape)) + lineScore(cleared);
-        const multiplier = cleared > 0 ? newCombo : 1;
-        const gained = applyCombo(base, multiplier);
+        const gained = applyCombo(base, newCombo);
         const score = state.score + gained;
         const highScore = Math.max(state.highScore, score);
 
         // Consume the block; refill when the tray is empty.
         let tray = state.tray.map((b, i) => (i === trayIndex ? null : b));
         if (tray.every((b) => b === null)) {
-          tray = freshTray();
+          tray = generateRandomTray();
         }
 
         set({
@@ -97,4 +92,3 @@ export const useGameStore = create<GameStore>()(
   ),
 );
 
-export { GRID_SIZE };

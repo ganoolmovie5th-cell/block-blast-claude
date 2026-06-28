@@ -93,3 +93,12 @@ Jest preset `jest-expo` + `transformIgnorePatterns` sudah dikonfigurasi di `pack
 - Power-ups & obstacle blocks
 - Leaderboard online
 - CI GitHub Actions (test + tsc otomatis tiap push)
+
+---
+
+## Pembersihan Kode / Ponytail Audit (Juni 2026)
+
+Penyederhanaan aman, tidak menyentuh kemurnian core/test/mapping drag→grid. Verifikasi `npm run typecheck` + `npm test` (33/33) hijau.
+- `gameStore.ts`: hapus `multiplier` redundan (`nextCombo` sudah return 1 saat `cleared<=0`, jadi `multiplier === newCombo` selalu) → `applyCombo(base, newCombo)`. Inline `freshTray()` → `generateRandomTray()`.
+- Hapus re-export `GRID_SIZE` di `gameStore.ts` & `Grid.tsx` (0 importer; semua dari `core/types`).
+- Hapus `DRAG_SCALE_FACTOR` mati di `boardLayout.ts`.
