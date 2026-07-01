@@ -2,15 +2,9 @@ import { BlockShape, Cell, Grid, GRID_SIZE } from './types';
 
 /** Create an empty GRID_SIZE x GRID_SIZE grid. */
 export function createEmptyGrid(): Grid {
-  const grid: Grid = [];
-  for (let r = 0; r < GRID_SIZE; r += 1) {
-    const row: Cell[] = [];
-    for (let c = 0; c < GRID_SIZE; c += 1) {
-      row.push({ filled: false, color: null });
-    }
-    grid.push(row);
-  }
-  return grid;
+  return Array.from({ length: GRID_SIZE }, () =>
+    Array.from({ length: GRID_SIZE }, () => ({ filled: false, color: null })),
+  );
 }
 
 /** Deep copy a grid (cells are flat objects, so a shallow per-cell clone suffices). */
@@ -77,14 +71,7 @@ export function clearLines(grid: Grid): {
     if (grid[r].every((cell) => cell.filled)) fullRows.push(r);
   }
   for (let c = 0; c < GRID_SIZE; c += 1) {
-    let full = true;
-    for (let r = 0; r < GRID_SIZE; r += 1) {
-      if (!grid[r][c].filled) {
-        full = false;
-        break;
-      }
-    }
-    if (full) fullCols.push(c);
+    if (grid.every((row) => row[c].filled)) fullCols.push(c);
   }
 
   if (fullRows.length === 0 && fullCols.length === 0) {

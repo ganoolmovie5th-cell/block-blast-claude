@@ -11,7 +11,6 @@ import {
 } from '../core/gameLogic';
 import { generateRandomTray, cellCount } from '../core/blocks';
 import {
-  placementScore,
   lineScore,
   applyCombo,
   nextCombo,
@@ -61,7 +60,7 @@ export const useGameStore = create<GameStore>()(
 
         // Scoring + combo.
         const newCombo = nextCombo(state.combo, cleared);
-        const base = placementScore(cellCount(shape)) + lineScore(cleared);
+        const base = cellCount(shape) + lineScore(cleared);
         const gained = applyCombo(base, newCombo);
         const score = state.score + gained;
         const highScore = Math.max(state.highScore, score);

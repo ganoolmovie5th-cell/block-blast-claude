@@ -1,17 +1,10 @@
 /** Maximum combo multiplier. */
 export const MAX_COMBO = 5;
 
-/** Points for placing a block: one point per filled cell. */
-export function placementScore(cellCount: number): number {
-  return cellCount;
-}
-
 /** Points for clearing `cleared` lines in a single move (escalating bonus). */
 export function lineScore(cleared: number): number {
-  const table: Record<number, number> = { 0: 0, 1: 10, 2: 30, 3: 60, 4: 100 };
-  if (cleared in table) return table[cleared];
-  // 5+ lines: extrapolate beyond the table.
-  return 100 + (cleared - 4) * 50;
+  const table = [0, 10, 30, 60, 100];
+  return cleared < table.length ? table[cleared] : 100 + (cleared - 4) * 50;
 }
 
 /**

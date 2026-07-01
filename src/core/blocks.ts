@@ -37,13 +37,7 @@ export const BLOCK_CATALOG: BlockShape[] = [
 
 /** Count the filled subcells of a shape. */
 export function cellCount(shape: BlockShape): number {
-  let count = 0;
-  for (const row of shape.matrix) {
-    for (const v of row) {
-      if (v) count += 1;
-    }
-  }
-  return count;
+  return shape.matrix.flat().filter(Boolean).length;
 }
 
 /** Pick TRAY_SIZE random shapes (with replacement) from the catalog. */

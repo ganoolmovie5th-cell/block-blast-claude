@@ -1,11 +1,4 @@
-import { placementScore, lineScore, applyCombo, nextCombo } from './scoring';
-
-describe('placementScore', () => {
-  it('equals the number of cells placed', () => {
-    expect(placementScore(4)).toBe(4);
-    expect(placementScore(1)).toBe(1);
-  });
-});
+import { lineScore, applyCombo, nextCombo } from './scoring';
 
 describe('lineScore', () => {
   it('scores escalating bonuses for multi-line clears', () => {
