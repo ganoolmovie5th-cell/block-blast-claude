@@ -74,3 +74,10 @@ Sederhanakan tanpa mengubah perilaku. Verifikasi: `npm run typecheck` lolos, `np
 - `src/store/gameStore.ts`: `multiplier = cleared>0 ? newCombo : 1` redundan (`nextCombo` sudah reset ke 1) → pakai `newCombo` langsung; inline wrapper `freshTray` → `generateRandomTray`.
 - Hapus re-export mubazir `export { GRID_SIZE }` di `gameStore.ts` & `components/Grid.tsx` (semua konsumen impor dari `core/types`).
 - Hapus `DRAG_SCALE_FACTOR` (=1, 0 pemakaian) di `components/boardLayout.ts`.
+
+### Audit Lanjutan (Juli 2026)
+
+Hapus dead code & shrink core logic. Verifikasi: `npm run typecheck` lolos, `npm test` 33/33 pass.
+- `src/core/scoring.ts`: hapus fungsi identitas `placementScore()` (hanya return input); `lineScore` dari `Record<number,number>` → array `[0,10,30,60,100]`
+- `src/core/gameLogic.ts`: `createEmptyGrid()` nested loops → `Array.from` one-liner; `fullCols` manual loop → `grid.every(row => row[c].filled)`
+- `src/core/blocks.ts`: `cellCount` double-loop → `.flat().filter(Boolean).length`
