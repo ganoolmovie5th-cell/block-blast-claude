@@ -4,12 +4,10 @@ import { Grid as GridModel } from '../core/types';
 import { Cell } from './Cell';
 import { BOARD_PADDING } from './boardLayout';
 
-export type PreviewMap = Record<string, 'valid' | 'invalid'>;
-
 type Props = {
   grid: GridModel;
   cellSize: number;
-  previews?: PreviewMap;
+  previews?: Record<string, 'valid' | 'invalid'>;
   /** Fires with the grid's absolute window position so drops can be mapped. */
   onMeasure?: (x: number, y: number) => void;
 };

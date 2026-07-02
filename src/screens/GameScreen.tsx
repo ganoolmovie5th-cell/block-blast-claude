@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGameStore } from '../store/gameStore';
 import { GRID_SIZE } from '../core/types';
 import { canPlaceBlock } from '../core/gameLogic';
-import { Grid, PreviewMap } from '../components/Grid';
+import { Grid } from '../components/Grid';
 import { BlockTray } from '../components/BlockTray';
 import { ScoreBoard } from '../components/ScoreBoard';
 import { GameOverModal } from '../components/GameOverModal';
@@ -42,7 +42,7 @@ export function GameScreen() {
   const lastCleared = useGameStore((s) => s.lastCleared);
 
   const gridOrigin = React.useRef({ x: 0, y: 0 });
-  const [previews, setPreviews] = React.useState<PreviewMap>({});
+  const [previews, setPreviews] = React.useState<Record<string, 'valid' | 'invalid'>>({});
   // Replay the clear flash each time a non-empty clear happens.
   const [flash, setFlash] = React.useState<{ cells: [number, number][]; id: number }>({
     cells: [],
@@ -83,7 +83,7 @@ export function GameScreen() {
       if (!resolved) return;
       const { row, col, shape } = resolved;
       const valid = canPlaceBlock(grid, shape, row, col);
-      const map: PreviewMap = {};
+      const map: Record<string, 'valid' | 'invalid'> = {};
       for (let r = 0; r < shape.matrix.length; r += 1) {
         for (let c = 0; c < shape.matrix[r].length; c += 1) {
           if (!shape.matrix[r][c]) continue;
