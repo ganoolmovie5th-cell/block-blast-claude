@@ -81,3 +81,8 @@ Hapus dead code & shrink core logic. Verifikasi: `npm run typecheck` lolos, `npm
 - `src/core/scoring.ts`: hapus fungsi identitas `placementScore()` (hanya return input); `lineScore` dari `Record<number,number>` → array `[0,10,30,60,100]`
 - `src/core/gameLogic.ts`: `createEmptyGrid()` nested loops → `Array.from` one-liner; `fullCols` manual loop → `grid.every(row => row[c].filled)`
 - `src/core/blocks.ts`: `cellCount` double-loop → `.flat().filter(Boolean).length`
+
+### Audit Lanjutan 3 (Juli 2026)
+
+- `src/components/Grid.tsx`: hapus exported type alias `PreviewMap` → inline `Record<string, 'valid' | 'invalid'>` di Props dan di `GameScreen.tsx`
+- `CELL_SIZE` sudah di module scope (tidak perlu diubah); `FlashComponent` menggunakan hooks, tidak bisa di-inline ke `.map()`
