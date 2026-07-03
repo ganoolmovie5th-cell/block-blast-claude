@@ -15,7 +15,7 @@ Game puzzle Block Blast klasik untuk mobile. Drag blok ke grid 8x8; baris/kolom 
 - Tambah paket selalu via `npx expo install <paket>`, bukan `npm install` versi bebas
 - **Logika game di `src/core/` harus murni** (no React import) agar mudah di-test
 - TDD: tulis test dulu untuk semua logika di `src/core/` dan `src/store/`
-- Persisted (AsyncStorage): `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`. State permainan lainnya transient.
+- Persisted (AsyncStorage): `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`, `stats`, `unlockedAchievements`, `lastPlayDate`, `tutorialSeen`. State permainan lainnya transient.
 
 ---
 
@@ -29,16 +29,24 @@ src/
 │   ├── gameLogic.ts    # createEmptyGrid, canPlaceBlock, placeBlock, clearLines, isGameOver
 │   ├── scoring.ts      # lineScore, applyCombo, nextCombo (MAX_COMBO=5)
 │   ├── themes.ts       # Theme type, THEMES (5 skins), getTheme
-│   └── dailyChallenge.ts # mulberry32 seeded PRNG, generateDailyTray, todayStr
+│   ├── dailyChallenge.ts # mulberry32 seeded PRNG, generateDailyTray, todayStr
+│   ├── gameModes.ts    # GameMode type, TIMED_DURATION, createObstacleGrid, pickProgressiveShape
+│   ├── powerUps.ts     # PowerUpState, applyBomb, applyColorBlast, rotateShape, earnPowerUps
+│   ├── achievements.ts # Achievement type, Stats, ACHIEVEMENTS (14), checkNewAchievements
+│   ├── haptics.ts      # hapticPlace/Clear/Combo/GameOver/PowerUp (expo-haptics)
+│   └── sounds.ts       # playPlace/Clear/Combo/GameOver stubs (expo-av)
 ├── store/
-│   └── gameStore.ts    # Zustand + persist; actions: newGame, dropBlock, undo, startDaily, setTheme
+│   └── gameStore.ts    # Zustand + persist; actions: newGame, startMode, dropBlock, undo, startDaily, setTheme, tickTimer, useBomb, useColorBlast, useRotate, dismissAchievement, markTutorialSeen
 ├── components/
-│   ├── boardLayout.ts  # KONSTANTA layout bersama (CELL_MARGIN, BOARD_PADDING, DRAG_LIFT, cellStep)
+│   ├── boardLayout.ts  # KONSTANTA layout bersama
 │   ├── Cell.tsx, Grid.tsx
 │   ├── DraggableBlock.tsx, BlockTray.tsx
 │   ├── ScoreBoard.tsx, GameOverModal.tsx
 │   ├── ClearFlash.tsx, ComboPopup.tsx
-│   └── ThemePicker.tsx # Modal pilih skin (unlock by highScore)
+│   ├── ThemePicker.tsx, AchievementPopup.tsx
+│   ├── StatsModal.tsx, ModePickerModal.tsx
+│   ├── PowerUpBar.tsx, TutorialOverlay.tsx
+│   └── Confetti.tsx
 └── screens/
     └── GameScreen.tsx  # Orkestrasi + mapping drag→grid
 ```
@@ -91,8 +99,9 @@ Jest preset `jest-expo` + `transformIgnorePatterns` sudah dikonfigurasi di `pack
 
 ## Roadmap (di luar MVP)
 
-- Sound effect & haptic feedback
 - Leaderboard online
+- Ghost replay
+- Share score card
 - CI GitHub Actions (test + tsc otomatis tiap push)
 
 ---
@@ -126,3 +135,44 @@ Penyederhanaan aman, tidak menyentuh kemurnian core/test/mapping drag→grid. Ve
 - `themeId` di-persist di AsyncStorage.
 - `ThemePicker.tsx` — modal pilih tema, preview warna, indikator locked/active.
 - Warna dari tema di-inject ke Cell, Grid, ScoreBoard, GameOverModal, dan GameScreen background.
+
+### Game Modes (4 mode)
+- `src/core/gameModes.ts`: Classic, Timed (120s countdown), Zen (no game over), Obstacles (8 sel pre-filled).
+- `ModePickerModal.tsx` — modal pilih mode dari header.
+- Timed mode: `tickTimer()` dipanggil setiap detik via `setInterval`; game over saat waktu habis.
+- Zen mode: saat tray stuck, otomatis refill (tidak pernah game over).
+- Obstacles: `createObstacleGrid()` taruh 8 sel abu-abu yang tidak bisa dihapus di posisi random.
+- Progressive difficulty: setelah 10 tray, blok besar (4+ sel) lebih sering muncul.
+
+### Power-ups (3 jenis)
+- `src/core/powerUps.ts`: Bomb (clear 3×3), Color Blast (hapus semua satu warna), Rotate (putar blok 90°).
+- Earn 1 power-up per 500 poin (distribusi round-robin ke 3 jenis).
+- `PowerUpBar.tsx` tampil di bawah ScoreBoard saat ada power-up tersedia.
+- Bomb: target grid center (simplified); Color Blast: auto-pick warna terbanyak; Rotate: putar blok pertama di tray.
+
+### Achievements (14 badges)
+- `src/core/achievements.ts`: score milestones (500/1k/2k/5k), combo (x3/x5), lines (4 sekaligus, 50 total, 200 total), games (10/50), streak (3/7 hari).
+- Stats di-persist: gamesPlayed, totalScore, totalLinesCleared, bestScore, bestCombo, maxLinesOneMove, dailyStreak.
+- `AchievementPopup.tsx` muncul saat badge baru di-unlock (auto-dismiss on tap).
+- `StatsModal.tsx` menampilkan semua stats + grid achievement (locked/unlocked).
+
+### Haptic Feedback
+- `src/core/haptics.ts` via `expo-haptics`: light (place), medium (clear), success (combo), error (game over), heavy (power-up).
+
+### Sound Effects (stubs)
+- `src/core/sounds.ts` via `expo-av`: placeholder — Audio mode di-init, fungsi play* tersedia tapi kosong. Tambahkan file .mp3 di assets untuk aktivasi.
+
+### Daily Streak
+- Hitung hari berturut-turut bermain. Reset ke 1 jika skip sehari. Tampil di StatsModal.
+
+### Confetti Particles
+- `src/components/Confetti.tsx`: 24 partikel burst saat clear ≥2 baris sekaligus (≥16 sel).
+- Warna 7 varian, gravitasi + rotasi via Reanimated.
+
+### Tutorial Onboarding
+- `src/components/TutorialOverlay.tsx`: 3 step overlay (Drag & Drop, Clear Lines, Combos).
+- Tampil sekali saat app pertama dibuka; `tutorialSeen` di-persist.
+
+### Accessibility
+- Semua tombol interaktif punya `accessibilityRole="button"` + `accessibilityLabel`.
+- Power-up buttons announce jumlah tersedia via label.

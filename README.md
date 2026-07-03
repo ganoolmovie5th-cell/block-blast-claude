@@ -11,13 +11,24 @@ Dibangun dengan React Native + Expo SDK 54 (kompatibel dengan Expo Go).
 - Grid 8x8 dengan 3 blok per giliran dan refill otomatis
 - Drag-and-drop mulus (gesture-handler + reanimated, jalan di UI thread)
 - Preview penempatan: hijau jika muat, merah jika tidak
-- Clear baris/kolom dengan animasi flash
+- Clear baris/kolom dengan animasi flash + confetti untuk multi-line clear
 - Sistem combo/streak dengan multiplier (hingga x5) + popup animasi
 - High score lokal yang tersimpan antar sesi (AsyncStorage)
 - Deteksi game over + tombol main lagi
 - **Daily Challenge** — puzzle deterministik per hari (seeded PRNG), skor terpisah
 - **Undo (1× per game)** — satu kesempatan undo per game, reset tiap game baru
 - **Theme Skins** — 5 tema warna (Classic, Midnight, Forest, Sunset, Neon), unlock via high score
+- **Game Modes** — Classic, Timed (2 menit), Zen (tanpa game over), Obstacles (sel pre-filled)
+- **Power-ups** — Bomb (3×3 clear), Color Blast (hapus semua satu warna), Rotate (putar blok 90°) — earn per 500 poin
+- **Progressive Difficulty** — setelah 10 tray, blok besar makin sering muncul
+- **Haptic Feedback** — getaran berbeda untuk place, clear, combo, game over, power-up
+- **Sound Effects** — placeholder stubs (siap ditambah asset .mp3)
+- **Achievement Badges** — 14 badges (score milestones, combo, lines, streak)
+- **Statistics Dashboard** — games played, best score, lines cleared, best combo, streak, achievement progress
+- **Daily Streak** — hitung hari berturut-turut bermain
+- **Confetti Particles** — burst animasi saat multi-line clear
+- **Tutorial Onboarding** — 3-step overlay pertama kali buka app
+- **Accessibility** — screen reader labels di semua tombol interaktif
 
 ## Tech Stack
 
@@ -37,11 +48,18 @@ src/
 │   ├── gameLogic.ts    # place, clearLines, isGameOver
 │   ├── scoring.ts      # poin + combo
 │   ├── themes.ts       # 5 tema warna + unlock thresholds
-│   └── dailyChallenge.ts # seeded PRNG + daily tray generator
+│   ├── dailyChallenge.ts # seeded PRNG + daily tray generator
+│   ├── gameModes.ts    # Timed, Zen, Obstacles, progressive difficulty
+│   ├── powerUps.ts     # Bomb, Color Blast, Rotate logic
+│   ├── achievements.ts # 14 badges + stats tracking
+│   ├── haptics.ts      # Haptic feedback (expo-haptics)
+│   └── sounds.ts       # Sound effect stubs (expo-av)
 ├── store/          # gameStore.ts (Zustand + persist)
 ├── components/     # Cell, Grid, BlockTray, DraggableBlock,
 │                   # ScoreBoard, GameOverModal, ClearFlash,
-│                   # ComboPopup, ThemePicker
+│                   # ComboPopup, ThemePicker, AchievementPopup,
+│                   # StatsModal, ModePickerModal, PowerUpBar,
+│                   # TutorialOverlay, Confetti
 └── screens/        # GameScreen.tsx (orkestrasi + mapping drag→grid)
 ```
 
@@ -65,12 +83,14 @@ npx expo export --platform android   # verifikasi bundle
 ## Catatan
 
 - Akurasi mapping koordinat drag→grid sebaiknya diuji di device nyata; nilai `DRAG_LIFT` dan layout di `src/components/boardLayout.ts` dapat di-tune bila perlu.
-- Hanya `highScore`, `dailyHighScore`, `dailyCompleted`, dan `themeId` yang di-persist; state permainan berjalan bersifat transient.
+- Persisted: `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`, `stats`, `unlockedAchievements`, `lastPlayDate`, `tutorialSeen`. State permainan transient.
+- Sound effects: stubs di `src/core/sounds.ts` — tambahkan file .mp3 di `/assets/sounds/` dan load via `Audio.Sound.createAsync()` untuk aktivasi.
 
 ## Roadmap
 
-- Sound effect & haptic feedback
 - Leaderboard online
+- Ghost replay (lihat best game dimainkan ulang)
+- Share score card (generate image → share)
 
 ## Pembersihan Kode / Ponytail Audit (Juni 2026)
 
