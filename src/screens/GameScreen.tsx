@@ -4,12 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGameStore } from '../store/gameStore';
 import { GRID_SIZE } from '../core/types';
 import { canPlaceBlock } from '../core/gameLogic';
+import { getTheme } from '../core/themes';
+import { todayStr } from '../core/dailyChallenge';
 import { Grid } from '../components/Grid';
 import { BlockTray } from '../components/BlockTray';
 import { ScoreBoard } from '../components/ScoreBoard';
 import { GameOverModal } from '../components/GameOverModal';
 import { ClearFlash } from '../components/ClearFlash';
 import { ComboPopup } from '../components/ComboPopup';
+import { ThemePicker } from '../components/ThemePicker';
 import {
   CELL_MARGIN,
   BOARD_PADDING,
@@ -20,13 +23,11 @@ import {
 
 const SCREEN_PADDING = 16;
 
-// Derive the board cell size from screen width so the grid fits any device.
 const screenWidth = Dimensions.get('window').width;
 const available = screenWidth - SCREEN_PADDING * 2;
 const CELL_SIZE = Math.floor(
   (available - BOARD_PADDING * 2) / GRID_SIZE - CELL_MARGIN * 2,
 );
-// Tray blocks render a touch smaller so wide shapes fit three-across.
 const TRAY_CELL_SIZE = Math.floor(CELL_SIZE * 0.62);
 
 export function GameScreen() {
@@ -40,10 +41,26 @@ export function GameScreen() {
   const dropBlock = useGameStore((s) => s.dropBlock);
   const newGame = useGameStore((s) => s.newGame);
   const lastCleared = useGameStore((s) => s.lastCleared);
+  // Undo
+  const undoSnapshot = useGameStore((s) => s.undoSnapshot);
+  const undoUsed = useGameStore((s) => s.undoUsed);
+  const undo = useGameStore((s) => s.undo);
+  // Daily
+  const isDailyMode = useGameStore((s) => s.isDailyMode);
+  const dailyHighScore = useGameStore((s) => s.dailyHighScore);
+  const dailyCompleted = useGameStore((s) => s.dailyCompleted);
+  const startDaily = useGameStore((s) => s.startDaily);
+  // Theme
+  const themeId = useGameStore((s) => s.themeId);
+  const setTheme = useGameStore((s) => s.setTheme);
+
+  const theme = getTheme(themeId);
+  const c = theme.colors;
+
+  const [showThemePicker, setShowThemePicker] = React.useState(false);
 
   const gridOrigin = React.useRef({ x: 0, y: 0 });
   const [previews, setPreviews] = React.useState<Record<string, 'valid' | 'invalid'>>({});
-  // Replay the clear flash each time a non-empty clear happens.
   const [flash, setFlash] = React.useState<{ cells: [number, number][]; id: number }>({
     cells: [],
     id: 0,
@@ -55,7 +72,6 @@ export function GameScreen() {
     }
   }, [lastCleared]);
 
-  // Map an absolute finger position to a board (row, col) for the given shape.
   const resolveCell = React.useCallback(
     (index: number, absoluteX: number, absoluteY: number) => {
       const shape = tray[index];
@@ -65,7 +81,6 @@ export function GameScreen() {
       const rows = shape.matrix.length;
       const firstX = gridOrigin.current.x + FIRST_CELL_OFFSET;
       const firstY = gridOrigin.current.y + FIRST_CELL_OFFSET;
-      // The block floats DRAG_LIFT above the finger and is centered on it.
       const centerX = absoluteX;
       const centerY = absoluteY - DRAG_LIFT;
       const topLeftX = centerX - (cols * step) / 2;
@@ -109,16 +124,53 @@ export function GameScreen() {
     [dropBlock, resolveCell],
   );
 
+  const canUndo = !undoUsed && undoSnapshot !== null;
+  const dailyAvailable = dailyCompleted !== todayStr();
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 12 }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 12, backgroundColor: c.bg }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.brand}>Block Blast</Text>
-        <Pressable style={styles.newGame} onPress={newGame} accessibilityRole="button">
-          <Text style={styles.newGameText}>New Game</Text>
-        </Pressable>
+        <Text style={[styles.brand, { color: c.text }]}>
+          {isDailyMode ? '📅 Daily' : 'Block Blast'}
+        </Text>
+        <View style={styles.headerRight}>
+          {dailyAvailable && !isDailyMode ? (
+            <Pressable
+              style={[styles.headerBtn, { backgroundColor: c.accent }]}
+              onPress={startDaily}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.headerBtnText, { color: c.buttonText }]}>Daily</Text>
+            </Pressable>
+          ) : null}
+          <Pressable
+            style={[styles.headerBtn, { backgroundColor: c.headerBg }]}
+            onPress={() => setShowThemePicker(true)}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.headerBtnText, { color: c.textSecondary }]}>🎨</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.headerBtn, { backgroundColor: c.headerBg }]}
+            onPress={newGame}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.headerBtnText, { color: c.textSecondary }]}>New</Text>
+          </Pressable>
+        </View>
       </View>
 
-      <ScoreBoard score={score} highScore={highScore} combo={combo} />
+      <ScoreBoard
+        score={score}
+        highScore={isDailyMode ? dailyHighScore : highScore}
+        combo={combo}
+        canUndo={canUndo}
+        onUndo={undo}
+        textColor={c.text}
+        textSecondary={c.textSecondary}
+        accentColor={c.accent}
+      />
 
       <View style={styles.boardWrap}>
         <View>
@@ -129,6 +181,8 @@ export function GameScreen() {
             onMeasure={(x, y) => {
               gridOrigin.current = { x, y };
             }}
+            boardBg={c.boardBg}
+            cellEmpty={c.cellEmpty}
           />
           <ClearFlash key={flash.id} cells={flash.cells} cellSize={CELL_SIZE} />
         </View>
@@ -147,7 +201,23 @@ export function GameScreen() {
         visible={isGameOver}
         score={score}
         highScore={highScore}
-        onRestart={newGame}
+        isDaily={isDailyMode}
+        dailyHighScore={dailyHighScore}
+        onRestart={isDailyMode ? startDaily : newGame}
+        onNewDaily={isDailyMode ? newGame : undefined}
+        accentColor={c.accent}
+        textColor={c.text}
+      />
+
+      <ThemePicker
+        visible={showThemePicker}
+        currentThemeId={themeId}
+        highScore={highScore}
+        onSelect={(id) => {
+          setTheme(id);
+          setShowThemePicker(false);
+        }}
+        onClose={() => setShowThemePicker(false)}
       />
     </View>
   );
@@ -156,7 +226,6 @@ export function GameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
     paddingHorizontal: SCREEN_PADDING,
   },
   header: {
@@ -165,14 +234,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  brand: { fontSize: 24, fontWeight: '800', color: '#1e293b' },
-  newGame: {
-    backgroundColor: '#e2e8f0',
+  headerRight: { flexDirection: 'row', gap: 8 },
+  brand: { fontSize: 24, fontWeight: '800' },
+  headerBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 12,
   },
-  newGameText: { color: '#475569', fontWeight: '700' },
+  headerBtnText: { fontWeight: '700', fontSize: 14 },
   boardWrap: {
     flex: 1,
     alignItems: 'center',

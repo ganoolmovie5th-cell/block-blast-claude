@@ -8,20 +8,20 @@ type Props = {
   grid: GridModel;
   cellSize: number;
   previews?: Record<string, 'valid' | 'invalid'>;
-  /** Fires with the grid's absolute window position so drops can be mapped. */
   onMeasure?: (x: number, y: number) => void;
+  boardBg?: string;
+  cellEmpty?: string;
 };
 
-function GridComponent({ grid, cellSize, previews, onMeasure }: Props) {
+function GridComponent({ grid, cellSize, previews, onMeasure, boardBg = '#cbd5e1', cellEmpty }: Props) {
   const ref = React.useRef<View>(null);
 
   const handleLayout = (_e: LayoutChangeEvent) => {
-    // measureInWindow gives absolute screen coordinates for drop mapping.
     ref.current?.measureInWindow((x, y) => onMeasure?.(x, y));
   };
 
   return (
-    <View ref={ref} style={styles.board} onLayout={handleLayout}>
+    <View ref={ref} style={[styles.board, { backgroundColor: boardBg }]} onLayout={handleLayout}>
       {grid.map((row, r) => (
         <View key={r} style={styles.row}>
           {row.map((cell, c) => (
@@ -30,6 +30,7 @@ function GridComponent({ grid, cellSize, previews, onMeasure }: Props) {
               cell={cell}
               size={cellSize}
               preview={previews?.[`${r},${c}`] ?? null}
+              emptyColor={cellEmpty}
             />
           ))}
         </View>
@@ -40,7 +41,6 @@ function GridComponent({ grid, cellSize, previews, onMeasure }: Props) {
 
 const styles = StyleSheet.create({
   board: {
-    backgroundColor: '#cbd5e1',
     borderRadius: 12,
     padding: BOARD_PADDING,
   },

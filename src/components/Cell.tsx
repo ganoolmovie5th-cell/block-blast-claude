@@ -7,16 +7,17 @@ type Props = {
   cell: CellModel;
   size: number;
   preview?: 'valid' | 'invalid' | null;
+  emptyColor?: string;
 };
 
-function CellComponent({ cell, size, preview }: Props) {
+function CellComponent({ cell, size, preview, emptyColor = '#e2e8f0' }: Props) {
   const backgroundColor = cell.filled
     ? cell.color ?? '#94a3b8'
     : preview === 'valid'
       ? 'rgba(34,197,94,0.45)'
       : preview === 'invalid'
         ? 'rgba(239,68,68,0.4)'
-        : '#e2e8f0';
+        : emptyColor;
 
   return (
     <View style={[styles.cell, { width: size, height: size, backgroundColor }]} />

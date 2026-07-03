@@ -15,6 +15,9 @@ Dibangun dengan React Native + Expo SDK 54 (kompatibel dengan Expo Go).
 - Sistem combo/streak dengan multiplier (hingga x5) + popup animasi
 - High score lokal yang tersimpan antar sesi (AsyncStorage)
 - Deteksi game over + tombol main lagi
+- **Daily Challenge** — puzzle deterministik per hari (seeded PRNG), skor terpisah
+- **Undo (1× per game)** — satu kesempatan undo per game, reset tiap game baru
+- **Theme Skins** — 5 tema warna (Classic, Midnight, Forest, Sunset, Neon), unlock via high score
 
 ## Tech Stack
 
@@ -32,10 +35,13 @@ src/
 │   ├── types.ts        # Grid, Cell, BlockShape, GameState
 │   ├── blocks.ts       # Katalog blok + tray generator
 │   ├── gameLogic.ts    # place, clearLines, isGameOver
-│   └── scoring.ts      # poin + combo
+│   ├── scoring.ts      # poin + combo
+│   ├── themes.ts       # 5 tema warna + unlock thresholds
+│   └── dailyChallenge.ts # seeded PRNG + daily tray generator
 ├── store/          # gameStore.ts (Zustand + persist)
 ├── components/     # Cell, Grid, BlockTray, DraggableBlock,
-│                   # ScoreBoard, GameOverModal, ClearFlash, ComboPopup
+│                   # ScoreBoard, GameOverModal, ClearFlash,
+│                   # ComboPopup, ThemePicker
 └── screens/        # GameScreen.tsx (orkestrasi + mapping drag→grid)
 ```
 
@@ -51,7 +57,7 @@ npx expo start --go    # scan QR dengan Expo Go (SDK 54)
 ## Testing
 
 ```bash
-npm test               # jalankan unit test (33 test)
+npm test               # jalankan unit test (42 test)
 npm run typecheck      # tsc --noEmit (0 error)
 npx expo export --platform android   # verifikasi bundle
 ```
@@ -59,13 +65,11 @@ npx expo export --platform android   # verifikasi bundle
 ## Catatan
 
 - Akurasi mapping koordinat drag→grid sebaiknya diuji di device nyata; nilai `DRAG_LIFT` dan layout di `src/components/boardLayout.ts` dapat di-tune bila perlu.
-- Hanya `highScore` yang di-persist; state permainan berjalan bersifat transient.
+- Hanya `highScore`, `dailyHighScore`, `dailyCompleted`, dan `themeId` yang di-persist; state permainan berjalan bersifat transient.
 
-## Roadmap (di luar MVP)
+## Roadmap
 
 - Sound effect & haptic feedback
-- Dark/light mode
-- Power-ups & obstacle blocks
 - Leaderboard online
 
 ## Pembersihan Kode / Ponytail Audit (Juni 2026)

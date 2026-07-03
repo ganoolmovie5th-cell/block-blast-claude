@@ -15,7 +15,7 @@ Game puzzle Block Blast klasik untuk mobile. Drag blok ke grid 8x8; baris/kolom 
 - Tambah paket selalu via `npx expo install <paket>`, bukan `npm install` versi bebas
 - **Logika game di `src/core/` harus murni** (no React import) agar mudah di-test
 - TDD: tulis test dulu untuk semua logika di `src/core/` dan `src/store/`
-- Hanya `highScore` yang di-persist (AsyncStorage); state permainan transient
+- Persisted (AsyncStorage): `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`. State permainan lainnya transient.
 
 ---
 
@@ -27,15 +27,18 @@ src/
 │   ├── types.ts        # Grid, Cell, BlockShape, GameState, GRID_SIZE=8, TRAY_SIZE=3
 │   ├── blocks.ts       # BLOCK_CATALOG (14 bentuk), generateRandomTray, cellCount
 │   ├── gameLogic.ts    # createEmptyGrid, canPlaceBlock, placeBlock, clearLines, isGameOver
-│   └── scoring.ts      # placementScore, lineScore, applyCombo, nextCombo (MAX_COMBO=5)
+│   ├── scoring.ts      # lineScore, applyCombo, nextCombo (MAX_COMBO=5)
+│   ├── themes.ts       # Theme type, THEMES (5 skins), getTheme
+│   └── dailyChallenge.ts # mulberry32 seeded PRNG, generateDailyTray, todayStr
 ├── store/
-│   └── gameStore.ts    # Zustand + persist; actions: newGame, dropBlock
+│   └── gameStore.ts    # Zustand + persist; actions: newGame, dropBlock, undo, startDaily, setTheme
 ├── components/
 │   ├── boardLayout.ts  # KONSTANTA layout bersama (CELL_MARGIN, BOARD_PADDING, DRAG_LIFT, cellStep)
 │   ├── Cell.tsx, Grid.tsx
 │   ├── DraggableBlock.tsx, BlockTray.tsx
 │   ├── ScoreBoard.tsx, GameOverModal.tsx
-│   └── ClearFlash.tsx, ComboPopup.tsx
+│   ├── ClearFlash.tsx, ComboPopup.tsx
+│   └── ThemePicker.tsx # Modal pilih skin (unlock by highScore)
 └── screens/
     └── GameScreen.tsx  # Orkestrasi + mapping drag→grid
 ```
@@ -68,7 +71,7 @@ Spec & plan: `docs/specs/`, `docs/plans/`.
 ## Testing & Verifikasi (WAJIB sebelum selesai)
 
 ```bash
-npm test                              # unit test (33 test, harus pass)
+npm test                              # unit test (42 test, harus pass)
 npm run typecheck                     # tsc --noEmit (0 error)
 npx expo export --platform android    # bundle harus sukses ("Exported: dist")
 ```
@@ -89,8 +92,6 @@ Jest preset `jest-expo` + `transformIgnorePatterns` sudah dikonfigurasi di `pack
 ## Roadmap (di luar MVP)
 
 - Sound effect & haptic feedback
-- Dark/light mode
-- Power-ups & obstacle blocks
 - Leaderboard online
 - CI GitHub Actions (test + tsc otomatis tiap push)
 
@@ -102,3 +103,26 @@ Penyederhanaan aman, tidak menyentuh kemurnian core/test/mapping drag→grid. Ve
 - `gameStore.ts`: hapus `multiplier` redundan (`nextCombo` sudah return 1 saat `cleared<=0`, jadi `multiplier === newCombo` selalu) → `applyCombo(base, newCombo)`. Inline `freshTray()` → `generateRandomTray()`.
 - Hapus re-export `GRID_SIZE` di `gameStore.ts` & `Grid.tsx` (0 importer; semua dari `core/types`).
 - Hapus `DRAG_SCALE_FACTOR` mati di `boardLayout.ts`.
+
+
+## Fitur Baru (Juli 2026)
+
+### Daily Challenge
+- Puzzle deterministik per hari — semua pemain dapat tray yang sama.
+- Seeded PRNG (mulberry32) di `src/core/dailyChallenge.ts`; seed dari string tanggal + trayIndex.
+- `startDaily()` di store; skor tersimpan terpisah (`dailyHighScore`).
+- `dailyCompleted` menyimpan tanggal terakhir selesai (mencegah double-play hari yang sama).
+- Tombol "Daily" muncul di header jika hari ini belum dimainkan.
+
+### Undo (1× per game)
+- Snapshot state (grid, tray, score, combo) disimpan sebelum setiap `dropBlock`.
+- `undo()` restore snapshot; `undoUsed` = true → tombol hilang.
+- Reset setiap `newGame` / `startDaily`.
+- Tombol "↩ Undo" tampil di ScoreBoard (antara score & best) selama tersedia.
+
+### Theme Skins (5 tema)
+- Definisi di `src/core/themes.ts`: Classic (default), Midnight (200+), Forest (500+), Sunset (1000+), Neon (2000+).
+- Unlock berdasarkan `highScore` (all-time, bukan daily).
+- `themeId` di-persist di AsyncStorage.
+- `ThemePicker.tsx` — modal pilih tema, preview warna, indikator locked/active.
+- Warna dari tema di-inject ke Cell, Grid, ScoreBoard, GameOverModal, dan GameScreen background.
