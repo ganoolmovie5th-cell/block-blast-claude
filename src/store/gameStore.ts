@@ -16,6 +16,7 @@ import { GameMode, TIMED_DURATION, createObstacleGrid, pickProgressiveShape } fr
 import { PowerUpState, defaultPowerUps, earnPowerUps, applyBomb, applyColorBlast, rotateShape } from '../core/powerUps';
 import { Stats, defaultStats, checkNewAchievements } from '../core/achievements';
 import { hapticPlace, hapticClear, hapticCombo, hapticGameOver, hapticPowerUp } from '../core/haptics';
+import { playPlace, playClear, playCombo, playGameOver } from '../core/sounds';
 
 // ── Undo snapshot ──────────────────────────────────────────────────────────────
 type Snapshot = {
@@ -210,6 +211,7 @@ export const useGameStore = create<GameStore>()(
         if (!canPlaceBlock(state.grid, shape, row, col)) return;
 
         hapticPlace();
+        playPlace();
 
         const snapshot: Snapshot = {
           grid: state.grid,
@@ -221,10 +223,10 @@ export const useGameStore = create<GameStore>()(
         const placed = placeBlock(state.grid, shape, row, col);
         const { grid: clearedGrid, cleared, cells } = clearLines(placed);
 
-        if (cleared > 0) hapticClear();
+        if (cleared > 0) { hapticClear(); playClear(); }
 
         const newCombo = nextCombo(state.combo, cleared);
-        if (newCombo > 1 && newCombo > state.combo) hapticCombo();
+        if (newCombo > 1 && newCombo > state.combo) { hapticCombo(); playCombo(); }
 
         const base = cellCount(shape) + lineScore(cleared);
         const gained = applyCombo(base, newCombo);
@@ -274,7 +276,7 @@ export const useGameStore = create<GameStore>()(
           gameOver = isGameOver(clearedGrid, tray);
         }
 
-        if (gameOver) hapticGameOver();
+        if (gameOver) { hapticGameOver(); playGameOver(); }
 
         let dailyHighScore = state.dailyHighScore;
         let dailyCompleted = state.dailyCompleted;
@@ -331,6 +333,7 @@ export const useGameStore = create<GameStore>()(
         const next = state.timerSeconds - 1;
         if (next <= 0) {
           hapticGameOver();
+          playGameOver();
           set({ timerSeconds: 0, isGameOver: true });
         } else {
           set({ timerSeconds: next });
