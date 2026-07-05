@@ -34,7 +34,7 @@ src/
 │   ├── powerUps.ts     # PowerUpState, applyBomb, applyColorBlast, rotateShape, earnPowerUps
 │   ├── achievements.ts # Achievement type, Stats, ACHIEVEMENTS (14), checkNewAchievements
 │   ├── haptics.ts      # hapticPlace/Clear/Combo/GameOver/PowerUp (expo-haptics)
-│   └── sounds.ts       # playPlace/Clear/Combo/GameOver stubs (expo-av)
+│   └── sounds.ts       # playPlace/Clear/Combo/GameOver (expo-av, 4 WAV assets)
 ├── store/
 │   └── gameStore.ts    # Zustand + persist; actions: newGame, startMode, dropBlock, undo, startDaily, setTheme, tickTimer, useBomb, useColorBlast, useRotate, dismissAchievement, markTutorialSeen
 ├── components/
@@ -159,8 +159,10 @@ Penyederhanaan aman, tidak menyentuh kemurnian core/test/mapping drag→grid. Ve
 ### Haptic Feedback
 - `src/core/haptics.ts` via `expo-haptics`: light (place), medium (clear), success (combo), error (game over), heavy (power-up).
 
-### Sound Effects (stubs)
-- `src/core/sounds.ts` via `expo-av`: placeholder — Audio mode di-init, fungsi play* tersedia tapi kosong. Tambahkan file .mp3 di assets untuk aktivasi.
+### Sound Effects
+- `src/core/sounds.ts` via `expo-av`: 4 WAV beep tones di `assets/sounds/` (place.wav, clear.wav, combo.wav, gameover.wav).
+- Preloaded saat pertama kali dipanggil; play on place/clear/combo/gameOver events.
+- Ganti dengan file .mp3 berkualitas lebih tinggi jika diinginkan — interface tetap sama.
 
 ### Daily Streak
 - Hitung hari berturut-turut bermain. Reset ke 1 jika skip sehari. Tampil di StatsModal.

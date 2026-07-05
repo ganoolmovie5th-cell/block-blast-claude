@@ -22,7 +22,7 @@ Dibangun dengan React Native + Expo SDK 54 (kompatibel dengan Expo Go).
 - **Power-ups** — Bomb (3×3 clear), Color Blast (hapus semua satu warna), Rotate (putar blok 90°) — earn per 500 poin
 - **Progressive Difficulty** — setelah 10 tray, blok besar makin sering muncul
 - **Haptic Feedback** — getaran berbeda untuk place, clear, combo, game over, power-up
-- **Sound Effects** — placeholder stubs (siap ditambah asset .mp3)
+- **Sound Effects** — 4 WAV beep tones (place/clear/combo/gameover), preloaded via expo-av
 - **Achievement Badges** — 14 badges (score milestones, combo, lines, streak)
 - **Statistics Dashboard** — games played, best score, lines cleared, best combo, streak, achievement progress
 - **Daily Streak** — hitung hari berturut-turut bermain
@@ -53,7 +53,7 @@ src/
 │   ├── powerUps.ts     # Bomb, Color Blast, Rotate logic
 │   ├── achievements.ts # 14 badges + stats tracking
 │   ├── haptics.ts      # Haptic feedback (expo-haptics)
-│   └── sounds.ts       # Sound effect stubs (expo-av)
+│   └── sounds.ts       # Sound effects (expo-av, 4 WAV assets)
 ├── store/          # gameStore.ts (Zustand + persist)
 ├── components/     # Cell, Grid, BlockTray, DraggableBlock,
 │                   # ScoreBoard, GameOverModal, ClearFlash,
@@ -84,7 +84,7 @@ npx expo export --platform android   # verifikasi bundle
 
 - Akurasi mapping koordinat drag→grid sebaiknya diuji di device nyata; nilai `DRAG_LIFT` dan layout di `src/components/boardLayout.ts` dapat di-tune bila perlu.
 - Persisted: `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`, `stats`, `unlockedAchievements`, `lastPlayDate`, `tutorialSeen`. State permainan transient.
-- Sound effects: stubs di `src/core/sounds.ts` — tambahkan file .mp3 di `/assets/sounds/` dan load via `Audio.Sound.createAsync()` untuk aktivasi.
+- Sound effects: 4 WAV beep tones di `/assets/sounds/` — preloaded saat pertama kali dibutuhkan. Ganti dengan file .mp3 berkualitas lebih tinggi jika diinginkan.
 
 ## Roadmap
 
