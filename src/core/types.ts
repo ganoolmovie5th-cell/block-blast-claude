@@ -37,3 +37,10 @@ export type GameState = {
   combo: number;
   isGameOver: boolean;
 };
+
+/** Leaderboard entry for session. */
+export type LeaderboardEntry = {
+  score: number;
+  timestamp: number; // ms since epoch
+  gameMode: string; // 'classic', 'timed', 'zen', 'obstacles', 'daily'
+};
