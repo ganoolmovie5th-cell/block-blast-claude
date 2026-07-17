@@ -86,6 +86,15 @@ npx expo export --platform android   # verifikasi bundle
 - Persisted: `highScore`, `dailyHighScore`, `dailyCompleted`, `themeId`, `stats`, `unlockedAchievements`, `lastPlayDate`, `tutorialSeen`. State permainan transient.
 - Sound effects: 4 WAV beep tones di `/assets/sounds/` — preloaded saat pertama kali dibutuhkan. Ganti dengan file .mp3 berkualitas lebih tinggi jika diinginkan.
 
+## Update Juli 2026
+
+### Leaderboard Modal
+- **Session Leaderboard** — Top 5 scores from current session (no persistence)
+- New component `LeaderboardModal.tsx` shows rank, score, game mode, timestamp
+- Modal display only (scores recorded per-game ending)
+- Sorted descending by score, displays local time
+- Integration with GameScreen pending (store + button)
+
 ## Roadmap
 
 - Leaderboard online

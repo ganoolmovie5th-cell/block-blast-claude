@@ -178,3 +178,14 @@ Penyederhanaan aman, tidak menyentuh kemurnian core/test/mapping drag→grid. Ve
 ### Accessibility
 - Semua tombol interaktif punya `accessibilityRole="button"` + `accessibilityLabel`.
 - Power-up buttons announce jumlah tersedia via label.
+
+## Update Juli 2026
+
+### Leaderboard Modal (Session-based, no persistence)
+- New component: `src/components/LeaderboardModal.tsx`
+- Type: `LeaderboardEntry` (score, timestamp, gameMode) added to `src/core/types.ts`
+- Displays top 5 scores from current session, sorted descending by score
+- Shows rank, score, game mode, local timestamp
+- Modal close button + overlay dismiss
+- Integration pending: wire to GameScreen for score recording + button trigger
+- No AsyncStorage persistence — resets when app closed
