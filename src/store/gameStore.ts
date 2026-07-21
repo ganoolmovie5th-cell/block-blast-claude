@@ -73,12 +73,8 @@ function generateTrayForMode(mode: GameMode, trayCount: number, dailyDate?: stri
   if (mode === 'daily' && dailyDate) {
     return generateDailyTray(dailyDate, dailyTrayIndex ?? 0);
   }
-  if (mode === 'obstacles') {
-    // progressive shapes for obstacle mode too
-    return Array.from({ length: TRAY_SIZE }, () => pickProgressiveShape(trayCount));
-  }
-  if (trayCount >= 10) {
-    // progressive difficulty after 10 trays in classic/timed/zen
+  if (mode === 'obstacles' || trayCount >= 10) {
+    // progressive difficulty: obstacle mode + after 10 trays
     return Array.from({ length: TRAY_SIZE }, () => pickProgressiveShape(trayCount));
   }
   return generateRandomTray();
