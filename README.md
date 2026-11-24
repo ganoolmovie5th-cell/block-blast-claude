@@ -2,7 +2,7 @@
 
 Game puzzle Block Blast klasik untuk mobile. Drag potongan blok ke grid 8x8, isi baris atau kolom penuh untuk menghancurkannya dan kumpulkan poin. Game berakhir saat tidak ada blok yang muat di papan.
 
-**Tech Stack:** React Native · Expo SDK 54 · TypeScript · Zustand · Reanimated · Gesture Handler
+**Tech Stack:** React Native · Expo SDK 58 · TypeScript · Zustand · Reanimated · Gesture Handler
 
 ## Features
 

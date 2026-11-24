@@ -1,15 +1,16 @@
 // Sound effects service. Loads WAV assets and plays on game events.
-import { Audio, AVPlaybackSource } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 
 let initialized = false;
-const loaded: Record<string, Audio.Sound | null> = {
+
+const players: Record<string, AudioPlayer | null> = {
   place: null,
   clear: null,
   combo: null,
   gameover: null,
 };
 
-const sources: Record<string, AVPlaybackSource> = {
+const sources: Record<string, number> = {
   place: require('../../assets/sounds/place.wav'),
   clear: require('../../assets/sounds/clear.wav'),
   combo: require('../../assets/sounds/combo.wav'),
@@ -19,15 +20,15 @@ const sources: Record<string, AVPlaybackSource> = {
 async function init() {
   if (initialized) return;
   initialized = true;
-  await Audio.setAudioModeAsync({
-    playsInSilentModeIOS: false,
-    shouldDuckAndroid: true,
-  });
+  try {
+    await setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'duckOthers' });
+  } catch {
+    // non-critical
+  }
   // Preload all sounds
   for (const key of Object.keys(sources)) {
     try {
-      const { sound } = await Audio.Sound.createAsync(sources[key]);
-      loaded[key] = sound;
+      players[key] = createAudioPlayer(sources[key]);
     } catch {
       // ponytail: silently skip if asset fails to load (non-critical)
     }
@@ -36,11 +37,11 @@ async function init() {
 
 async function play(key: string) {
   if (!initialized) await init();
-  const sound = loaded[key];
-  if (!sound) return;
+  const player = players[key];
+  if (!player) return;
   try {
-    await sound.setPositionAsync(0);
-    await sound.playAsync();
+    await player.seekTo(0);
+    player.play();
   } catch {
     // non-critical
   }

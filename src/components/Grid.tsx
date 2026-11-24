@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View, type HostInstance } from 'react-native';
 import { Grid as GridModel } from '../core/types';
 import { Cell } from './Cell';
 import { BOARD_PADDING } from './boardLayout';
@@ -14,7 +14,7 @@ type Props = {
 };
 
 function GridComponent({ grid, cellSize, previews, onMeasure, boardBg = '#cbd5e1', cellEmpty }: Props) {
-  const ref = React.useRef<View>(null);
+  const ref = React.useRef<HostInstance>(null);
 
   const handleLayout = (_e: LayoutChangeEvent) => {
     ref.current?.measureInWindow((x, y) => onMeasure?.(x, y));
